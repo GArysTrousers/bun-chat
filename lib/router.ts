@@ -1,34 +1,38 @@
+
 export class Router {
 
-  routes: Route[] = [];
+  routes: IRoute[] = [];
 
-  constructor() {
-    
+  constructor() { }
+
+  add(route: IRoute) {
+    this.routes.push(route)
   }
 
-  add(pattern:string, resolver:(req:Request)=>Response) {
-    this.routes.push(new Route(pattern, resolver))
-  }
-
-  resolve(req: Request) {
+  async resolve(req: Request) {
     const url = new URL(req.url)
     console.log(url.pathname);
-    
+
     for (const route of this.routes) {
       if (url.pathname.match(route.pattern)) {
-        return route.resolver(req)
+        return await route.resolver(req)
       }
     }
-    return new Response('', {status:404})
+    return new Response(null, { status: 404 })
   }
 }
 
-export class Route {
+interface IRoute {
+  pattern: string;
+  resolver: (req: Request) => Promise<Response>;
+}
+
+export class Route implements IRoute {
 
   pattern: string;
-  resolver: (req:Request) => Response;
+  resolver: (req: Request) => Promise<Response>;
 
-  constructor(pattern: string, resolver: (req:Request) => Response) {
+  constructor(pattern: string, resolver: (req: Request) => Promise<Response>) {
     this.pattern = pattern;
     this.resolver = resolver;
   }
