@@ -24,3 +24,8 @@ export function template(name:string, data: { [key: string]: string } = {}) {
   }
   return text;
 }
+
+export async function page(filename:string) {
+  let file = Bun.file(filename)
+  return await file.text()
+}
