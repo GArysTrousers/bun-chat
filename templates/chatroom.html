@@ -2,14 +2,12 @@
   Welcome to...
   <h1>The Chat</h1>
   <h2>{{room}}</h2>
+  <div id="wsStatus">Connecting...</div>
 </div>
 
 <div class="w-full">
   <div class="flex flex-col gap-3 mx-auto max-w-2xl border-2 border-black rounded-lg p-3">
-    <div id="wsStatus">Connecting...</div>
-    <div id="messageList" class="flex flex-col h-96 overflow-y-scroll">
-
-    </div>
+    <div id="messageList" class="flex flex-col h-96 overflow-y-scroll"></div>
     <input id="message" class="border-2 border-black rounded-lg w-full px-2 py-1" type="text"
       onkeypress="checkForEnter(event)" placeholder="Message" />
   </div>
@@ -47,22 +45,22 @@
    */
   function checkForEnter(event) {
     if (event.code == "Enter") {
-      submitMessage()
-    }
-  }
-
-  async function submitMessage() {
-    if (ws.readyState == ws.OPEN) {
-      ws.send(JSON.stringify({
-        type: MsgType.SendMessage,
-        data: view.message.value,
-      }))
+      submitMessage(view.message.value)
       view.message.value = ""
     }
   }
 
+  async function submitMessage(text) {
+    if (ws.readyState == ws.OPEN) {
+      ws.send(JSON.stringify({
+        type: MsgType.SendMessage,
+        data: text,
+      }))
+    }
+  }
+
   function addMessage(message) {
-    messages.push(message)
+    // messages.push(message)
     view.messageList.innerHTML += `<div>${message}</div>`
   }
 
@@ -76,6 +74,7 @@
       wsStatus.innerHTML = 'Connected'
       wsStatus.className = 'text-green-500'
       ws.send(msg(MsgType.JoinRoom, room))
+      ws.send(msg(MsgType.GetRoomMessages, room))
     }
     ws.onmessage = (ev) => {
       let message = JSON.parse(ev.data);
@@ -83,9 +82,16 @@
       if (message.type === MsgType.SendMessage) {
         addMessage(message.data);
       }
+      else if (message.type === MsgType.GetRoomMessages){
+        view.messageList.innerHTML = ""
+        let m = message.data
+        for (const msg of m) {
+          addMessage(msg)
+        }
+      }
     }
     ws.onclose = (ev) => {
-      wsStatus.innerHTML = 'Disconnected <button onclick="connect()">Re</button'
+      wsStatus.innerHTML = 'Disconnected <button onclick="connect()">Reconnect</button'
       wsStatus.className = 'text-red-500'
     }
     return ws

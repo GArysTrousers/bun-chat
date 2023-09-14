@@ -1,5 +1,5 @@
 import { ServerWebSocket } from "bun";
-import { ChatRoom, Client } from "./lib/chat";
+import { ChatRoom, Client, Message, MsgType, msg } from "./lib/chat";
 import { asset, html, loadTemplates, page, template } from "./lib/http";
 import { Route, Router } from "./lib/router";
 import { getRooms } from "./api/rooms";
@@ -72,7 +72,7 @@ Bun.serve({
     message(ws, rawMessage) {
       try {
         console.log(rawMessage);
-        
+
         let client = clients.get(ws)
         if (!client) throw "Client not found"
 
@@ -92,13 +92,11 @@ Bun.serve({
         }
         else if (message.type === MsgType.SendMessage) {
           if (!client.room) throw "Client not in room"
-          client.room.sendAll(msg(
-            MsgType.SendMessage, 
-            `${client.name}: ${message.data}`
-          ))
+          client.room.sendAll(`${client.name}: ${message.data}`)
         }
         else if (message.type === MsgType.GetRoomMessages) {
-
+          if (!client.room) throw "Client not in room"
+          ws.send(msg(MsgType.GetRoomMessages, client.room.messages))
         }
       } catch (error) {
         console.log(error);
@@ -108,24 +106,5 @@ Bun.serve({
 
   }
 })
-
-enum MsgType {
-  Error,
-  SetName,
-  SetNameConfirm,
-  JoinRoom,
-  JoinRoomConfirm,
-  SendMessage,
-  GetRoomMessages,
-}
-
-interface Message {
-  type: MsgType;
-  data: string;
-}
-
-function msg(type: MsgType, data: any = '') {
-  return JSON.stringify({ type, data })
-}
 
 console.log('Bun server started');
