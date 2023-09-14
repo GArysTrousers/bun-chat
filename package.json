@@ -1,9 +1,9 @@
 {
   "name": "bun-chat",
-  "module": "index.ts",
+  "module": "main.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --hot index.ts"
+    "dev": "bun --hot main.ts"
   },
   "devDependencies": {
     "bun-types": "latest"

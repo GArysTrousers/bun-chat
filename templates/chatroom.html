@@ -1,0 +1,87 @@
+<div class="text-center">
+  Welcome to...
+  <h1>The Chat</h1>
+  <h2>{{room}}</h2>
+</div>
+
+<div class="w-full">
+  <div class="flex flex-col gap-3 mx-auto max-w-2xl border-2 border-black rounded-lg p-3">
+    <div id="wsStatus">Connecting...</div>
+    <div id="messageList" class="flex flex-col h-96 overflow-y-scroll">
+
+    </div>
+    <input id="message" class="border-2 border-black rounded-lg w-full px-2 py-1" type="text"
+      onkeypress="checkForEnter(event)" placeholder="Message" />
+  </div>
+</div>
+
+<script>
+  const MsgType = {
+    Error: 0,
+    SetName: 1,
+    SetNameConfirm: 2,
+    JoinRoom: 3,
+    JoinRoomConfirm: 4,
+    SendMessage: 5,
+    GetRoomMessages: 6,
+  }
+  const view = {
+    messageList: document.getElementById('messageList'),
+    message: document.getElementById('message'),
+    wsStatus: document.getElementById('wsStatus'),
+  }
+
+  let room = '{{room}}'
+  let messages = []
+  let ws = connect()
+
+  /**
+   * @param {KeyboardEvent} event
+   */
+  function checkForEnter(event) {
+    if (event.code == "Enter") {
+      submitMessage()
+    }
+  }
+
+  async function submitMessage() {
+    if (ws.readyState == ws.OPEN) {
+      ws.send(JSON.stringify({
+        type: MsgType.SendMessage,
+        data: view.message.value,
+      }))
+      view.message.value = ""
+    }
+  }
+
+  function addMessage(message) {
+    messages.push(message)
+    view.messageList.innerHTML += `<div>${message}</div>`
+  }
+
+  function msg(type, data = '') {
+    return JSON.stringify({ type, data })
+  }
+
+  function connect() {
+    let newWS = new WebSocket('ws://localhost:3000')
+    newWS.onopen = (ev) => {
+      wsStatus.innerHTML = 'Connected'
+      wsStatus.className = 'text-green-500'
+      newWS.send(msg(MsgType.JoinRoom, room))
+    }
+    newWS.onmessage = (ev) => {
+      let message = JSON.parse(ev.data);
+      console.log(message);
+      if (message.type === MsgType.SendMessage) {
+        addMessage(message.data);
+      }
+    }
+    newWS.onclose = (ev) => {
+      wsStatus.innerHTML = 'Disconnected'
+      wsStatus.className = 'text-red-500'
+    }
+    return newWS
+  }
+
+</script>
