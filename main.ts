@@ -60,7 +60,7 @@ Bun.serve({
   },
   websocket: {
     open(ws) {
-      clients.set(ws, new Client("Pending", ws))
+      clients.set(ws, new Client("Anon", ws))
     },
     close(ws, code, reason) {
       let client = clients.get(ws)
@@ -92,7 +92,10 @@ Bun.serve({
         }
         else if (message.type === MsgType.SendMessage) {
           if (!client.room) throw "Client not in room"
-          client.room.sendAll(rawMessage)
+          client.room.sendAll(msg(
+            MsgType.SendMessage, 
+            `${client.name}: ${message.data}`
+          ))
         }
         else if (message.type === MsgType.GetRoomMessages) {
 

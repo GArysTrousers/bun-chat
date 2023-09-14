@@ -31,9 +31,16 @@
     wsStatus: document.getElementById('wsStatus'),
   }
 
+  let chatName = localStorage.getItem('chatName')
+  if (!chatName)  {
+    chatName = "Anon"
+    localStorage.setItem('chatName', chatName)
+  }
+
   let room = '{{room}}'
   let messages = []
-  let ws = connect()
+  let ws
+  connect()
 
   /**
    * @param {KeyboardEvent} event
@@ -64,24 +71,24 @@
   }
 
   function connect() {
-    let newWS = new WebSocket('ws://localhost:3000')
-    newWS.onopen = (ev) => {
+    ws = new WebSocket('ws://localhost:3000')
+    ws.onopen = (ev) => {
       wsStatus.innerHTML = 'Connected'
       wsStatus.className = 'text-green-500'
-      newWS.send(msg(MsgType.JoinRoom, room))
+      ws.send(msg(MsgType.JoinRoom, room))
     }
-    newWS.onmessage = (ev) => {
+    ws.onmessage = (ev) => {
       let message = JSON.parse(ev.data);
       console.log(message);
       if (message.type === MsgType.SendMessage) {
         addMessage(message.data);
       }
     }
-    newWS.onclose = (ev) => {
-      wsStatus.innerHTML = 'Disconnected'
+    ws.onclose = (ev) => {
+      wsStatus.innerHTML = 'Disconnected <button onclick="connect()">Re</button'
       wsStatus.className = 'text-red-500'
     }
-    return newWS
+    return ws
   }
 
 </script>
