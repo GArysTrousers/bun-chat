@@ -2,7 +2,7 @@ import { ServerWebSocket } from "bun";
 import { ChatRoom, Client, Message, MsgType, msg } from "./lib/chat";
 import { asset, html, loadTemplates, page, template } from "./lib/http";
 import { Route, Router } from "./lib/router";
-import { getRooms } from "./api/rooms";
+import { getRooms, newRoom } from "./api/rooms";
 
 await loadTemplates('./templates');
 
@@ -26,6 +26,7 @@ router.add(new Route('^/assets/', async (req: Request) => {
 }))
 
 router.add(new Route('^/api/get_rooms', getRooms))
+router.add(new Route('^/api/get_rooms', newRoom))
 
 router.add(new Route('^/room/', async (req) => {
   const url = new URL(req.url)
