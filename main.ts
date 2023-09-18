@@ -25,19 +25,21 @@ router.add(new Route('^/assets/', async (req: Request) => {
   return await asset(`.${url.pathname}`)
 }))
 
-router.add(new Route('^/api/get_rooms', getRooms))
-router.add(new Route('^/api/get_rooms', newRoom))
+router.add(new Route('^/api/get_rooms$', getRooms))
+router.add(new Route('^/api/new_room', newRoom))
 
 router.add(new Route('^/room/', async (req) => {
-  const url = new URL(req.url)
-  let room = url.pathname.match('^/room/(.+)')
-  if (!room) return new Response(null, { status: 404 })
+  let roomName = new URL(req.url).pathname.match('^/room/(.+)')
+  if (!roomName) return new Response(null, { status: 404 })
+  let room = roomName[1]
+  if (!chatRooms.find((v) => (v.name === room)))
+    return new Response("no room called: " + room, { status: 400 })
 
   return html(
     template('basic', {
       title: 'Chat',
       body: template('chatroom', {
-        room: room[1]
+        room: roomName[1]
       })
     }))
 }))
@@ -108,4 +110,4 @@ Bun.serve({
   }
 })
 
-console.log('Bun server started');
+console.log('Bun server started: http://localhost:3000');

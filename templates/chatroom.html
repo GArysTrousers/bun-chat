@@ -1,15 +1,16 @@
 <div class="text-center">
-  Welcome to...
   <h1>The Chat</h1>
   <h2>{{room}}</h2>
   <div id="wsStatus">Connecting...</div>
 </div>
 
-<div class="w-full">
-  <div class="flex flex-col gap-3 mx-auto max-w-2xl border-2 border-black rounded-lg p-3">
-    <div id="messageList" class="flex flex-col h-96 overflow-y-scroll"></div>
-    <input id="message" class="border-2 border-black rounded-lg w-full px-2 py-1" type="text"
-      onkeypress="checkForEnter(event)" placeholder="Message" />
+<div class="p-3">
+  <div class="w-full">
+    <div class="flex flex-col gap-3 mx-auto max-w-2xl border-2 border-black rounded-lg p-3">
+      <div id="messageList" class="flex flex-col h-96 overflow-y-scroll"></div>
+      <input id="message" class="border-2 border-black rounded-lg w-full px-2 py-1" type="text"
+        onkeypress="checkForEnter(event)" placeholder="Message" />
+    </div>
   </div>
 </div>
 
@@ -30,7 +31,7 @@
   }
 
   let chatName = localStorage.getItem('chatName')
-  if (!chatName)  {
+  if (!chatName) {
     chatName = "Anon"
     localStorage.setItem('chatName', chatName)
   }
@@ -82,7 +83,7 @@
       if (message.type === MsgType.SendMessage) {
         addMessage(message.data);
       }
-      else if (message.type === MsgType.GetRoomMessages){
+      else if (message.type === MsgType.GetRoomMessages) {
         view.messageList.innerHTML = ""
         let m = message.data
         for (const msg of m) {
